@@ -1,4 +1,11 @@
-import { POD, PODEntries, PODName, PODValue, PODValueTuple } from "@pcd/pod";
+import {
+  POD,
+  PODEntries,
+  PODEntryName,
+  PODName,
+  PODValue,
+  PODValueTuple
+} from "@pcd/pod";
 import { Identity } from "@semaphore-protocol/identity";
 
 /**
@@ -6,7 +13,7 @@ import { Identity } from "@semaphore-protocol/identity";
  * `objectName.entryName`.  Each of the sub-parts should be a valid PODName,
  * checked by {@link POD_NAME_REGEX}.
  */
-export type PODEntryIdentifier = `${PODName}.${PODName}`;
+export type PODEntryIdentifier = `${PODName}.${PODEntryName}`;
 
 // Single source of truth for tuple prefix (used internally).
 // This should not be a valid {@link PODName} to avoid name clashes.
@@ -110,7 +117,7 @@ export type GPCProofObjectConfig = {
    * {@link GPCBoundConfig}.  The entry's value may be hidden or revealed, or
    * constrained in other ways based on other parts of this configuration.
    */
-  entries: Record<PODName, GPCProofEntryConfig>;
+  entries: Record<PODEntryName, GPCProofEntryConfig>;
 
   // TODO(POD-P3): Is there anything to configure at this level?  Or can we
   // collapose it?

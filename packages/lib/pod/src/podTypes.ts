@@ -7,6 +7,17 @@ import { r as BabyJubjubR } from "@zk-kit/baby-jubjub";
 export type PODName = string;
 
 /**
+ * Name of a virtual POD entry is a `PODName` prefixed with '$'.
+ */
+export type PODVirtualName = `$${PODName}`;
+export const POD_VIRTUAL_NAME_PREFIX = "$";
+
+/**
+ * A POD entry name is either a `PODName` or a `PODVirtualName`.
+ */
+export type PODEntryName = PODName | PODVirtualName;
+
+/**
  * Regex matching legal names for POD entries.  This is intended to make
  * entry names usable as identifiers in TypeScript and other languages.
  */
@@ -29,6 +40,15 @@ export type PODStringValue = {
 export type PODCryptographicValue = {
   type: "cryptographic";
   value: bigint;
+};
+
+/**
+ * POD value for EdDSA public keys. This is represented as a string of hex
+ * digits representing a (Baby Jubjub) EdDSA public key in compressed form.
+ */
+export type PODEdDSAPublicKeyValue = {
+  type: "eddsa-pk";
+  value: string;
 };
 
 /**
@@ -72,7 +92,11 @@ export const POD_INT_MAX = (1n << 63n) - 1n;
  * POD values are tagged with their type.  All values contain `type` and `value`
  * fields, which Typescript separates into distinct types for validation.
  */
-export type PODValue = PODStringValue | PODCryptographicValue | PODIntValue;
+export type PODValue =
+  | PODStringValue
+  | PODCryptographicValue
+  | PODIntValue
+  | PODEdDSAPublicKeyValue;
 
 /**
  * Represents a tuple of POD values as an array.
@@ -89,4 +113,4 @@ export type PODValueTuple = PODValue[];
  * object is valid, but constructing a `POD` or `PODContent` object will
  * ensure all entries are valid.
  */
-export type PODEntries = Record<PODName, PODValue>;
+export type PODEntries = Record<PODEntryName, PODValue>;

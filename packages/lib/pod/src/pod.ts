@@ -1,7 +1,12 @@
 import { requireDefinedParameter } from "@pcd/util";
+import { derivePublicKey } from "@zk-kit/eddsa-poseidon";
 import JSONBig from "json-bigint";
 import { PODContent } from "./podContent";
-import { signPODRoot, verifyPODRootSignature } from "./podCrypto";
+import {
+  encodePublicKey,
+  signPODRoot,
+  verifyPODRootSignature
+} from "./podCrypto";
 import { PODEntries } from "./podTypes";
 import { checkPublicKeyFormat, checkSignatureFormat } from "./podUtil";
 
@@ -80,7 +85,8 @@ export class POD {
    * @throws if any of the entries aren't legal for inclusion in a POD
    */
   public static sign(entries: PODEntries, signerPrivateKey: string): POD {
-    const podContent = PODContent.fromEntries(entries);
+    const signerPublicKey = encodePublicKey(derivePublicKey(signerPrivateKey));
+    const podContent = PODContent.fromEntries(entries, signerPublicKey);
     const { signature, publicKey } = signPODRoot(
       podContent.contentID,
       signerPrivateKey
@@ -119,7 +125,7 @@ export class POD {
     signerPublicKey: string
   ): POD {
     return new POD(
-      PODContent.fromEntries(entries),
+      PODContent.fromEntries(entries, signerPublicKey),
       checkSignatureFormat(signature),
       checkPublicKeyFormat(signerPublicKey)
     );

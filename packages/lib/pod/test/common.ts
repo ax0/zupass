@@ -36,12 +36,12 @@ export const sampleEntries1 = {
 // If sample entries or private key change above, this value will need to
 // change.  Test failures will indicate the new value.
 export const expectedContentID1 =
-  21748523748810072846647845097417136490972606253431724953054174411568740252986n;
+  9095619689604731218504522759840775680951491521871308555220799601305046879398n;
 
 // If sample entries or private key change above, this value will need to
 // change.  Test failures will indicate the new value.
 export const expectedSignature1 =
-  "e0031246c8657545c154f407006f6856de2f69acd00f23b637ec23620792f10c7bf70befe45c79acf2a8cbea0eb4ffe1beef30ff23f2623fd5acf51beaa0d905";
+  "2c905f14d3c798b4edf65a89f9bb426ae3cf21aeb04a1565e95a9820b569ff9c4aa2c9db2277fa7449dbbe89236b49370fcd3b5bba7e646a47e4680ad0d9d401";
 
 export const sampleEntries2 = {
   attendee: { type: "cryptographic", value: ownerIdentity.commitment },
@@ -52,12 +52,12 @@ export const sampleEntries2 = {
 // If sample entries or private key change above, this value will need to
 // change.  Test failures will indicate the new value.
 export const expectedContentID2 =
-  8121973595251725959527136190050016648811901981184487048534858036206640503232n;
+  3574225835688418568389713940548054205889937615344600585501164161825923589841n;
 
 // If sample entries or private key change above, this value will need to
 // change.  Test failures will indicate the new value.
 export const expectedSignature2 =
-  "4febca252ff7e55c29bbada47b8b4b32f667e1270eb77f3a9b0f8ee73bebe689eb89d8ff85c4abd22bf32da15ad7f7fbf2c7e7b1d40ade685cb39c990f9f8b00";
+  "facb6ca68adeb5f151dcc87590dcd18c577a424b67968f3669dd50d8e9c5fd228d906604fea87bbd93d1cb371c62bdd4da57941d905120a949b9810f48f8bc05";
 
 export const testStringsToHash = [
   "",

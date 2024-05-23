@@ -8,6 +8,7 @@ import {
   POD_CRYPTOGRAPHIC_MIN,
   POD_INT_MAX,
   POD_INT_MIN,
+  POD_VIRTUAL_NAME_PREFIX,
   calcMaxEntriesForMerkleDepth,
   calcMinMerkleDepthForEntries,
   clonePODEntries,
@@ -19,18 +20,26 @@ import {
 import {
   expectedContentID1,
   expectedContentID2,
+  expectedPublicKey,
   sampleEntries1,
   sampleEntries2
 } from "./common";
 
 describe("PODContent class should work", async function () {
-  const expectedCount1 = Object.entries(sampleEntries1).length;
-  const expectedNameOrder1 = [...Object.keys(sampleEntries1)].sort();
-  const expectedCount2 = Object.entries(sampleEntries2).length;
-  const expectedNameOrder2 = [...Object.keys(sampleEntries2)].sort();
+  // Add 1 to account for the public key, which is a virtual entry.
+  const expectedCount1 = Object.entries(sampleEntries1).length + 1;
+  const expectedNameOrder1 = [
+    POD_VIRTUAL_NAME_PREFIX + "signerPublicKey",
+    ...Object.keys(sampleEntries1)
+  ].sort();
+  const expectedCount2 = Object.entries(sampleEntries2).length + 1;
+  const expectedNameOrder2 = [
+    POD_VIRTUAL_NAME_PREFIX + "signerPublicKey",
+    ...Object.keys(sampleEntries2)
+  ].sort();
 
-  const podContent1 = PODContent.fromEntries(sampleEntries1);
-  const podContent2 = PODContent.fromEntries(sampleEntries2);
+  const podContent1 = PODContent.fromEntries(sampleEntries1, expectedPublicKey);
+  const podContent2 = PODContent.fromEntries(sampleEntries2, expectedPublicKey);
 
   it("should process samples", function () {
     expect(podContent1.size).to.eq(expectedCount1);
@@ -168,7 +177,7 @@ describe("PODContent class should work", async function () {
   });
 
   it("should not be mutable via getValue", function () {
-    const pc = PODContent.fromEntries(sampleEntries1);
+    const pc = PODContent.fromEntries(sampleEntries1, expectedPublicKey);
     expect(pc.getValue("A")).to.deep.eq({ type: "int", value: 123n });
     expect(pc.getRawValue("A")).to.eq(123n);
 
@@ -183,7 +192,7 @@ describe("PODContent class should work", async function () {
   });
 
   it("should not be mutable via asEntries", function () {
-    const pc = PODContent.fromEntries(sampleEntries1);
+    const pc = PODContent.fromEntries(sampleEntries1, expectedPublicKey);
     expect(pc.getValue("A")).to.deep.eq({ type: "int", value: 123n });
     expect(pc.getRawValue("A")).to.eq(123n);
 
@@ -197,7 +206,7 @@ describe("PODContent class should work", async function () {
   });
 
   it("should not be mutable via listEntries", function () {
-    const pc = PODContent.fromEntries(sampleEntries1);
+    const pc = PODContent.fromEntries(sampleEntries1, expectedPublicKey);
     expect(pc.getValue("A")).to.deep.eq({ type: "int", value: 123n });
     expect(pc.getRawValue("A")).to.eq(123n);
 
@@ -234,7 +243,7 @@ describe("PODContent class should work", async function () {
       testEntries[badName] = { type: "string", value: "bad" };
 
       const fn = (): void => {
-        PODContent.fromEntries(testEntries);
+        PODContent.fromEntries(testEntries, expectedPublicKey);
       };
       expect(fn).to.throw(TypeError);
     }
@@ -272,7 +281,7 @@ describe("PODContent class should work", async function () {
       testEntries["badValueName"] = clonePODValue(testInput);
 
       const fn = (): void => {
-        PODContent.fromEntries(testEntries);
+        PODContent.fromEntries(testEntries, expectedPublicKey);
       };
       expect(fn).to.throw(TypeError, "badValueName");
     }

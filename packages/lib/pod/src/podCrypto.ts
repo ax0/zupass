@@ -40,6 +40,17 @@ export function podIntHash(input: bigint): bigint {
 }
 
 /**
+ * Calculates the appropriate hash for a POD value represented as an EdDSA
+ * public key, which could be one of multiple value types (see {@link
+ * podValueHash}).
+ */
+export function podEdDSAPublicKeyHash(input: string): bigint {
+  // TODO(POD-P2): Finalize choice of hash for POD EdDSA public key values.
+  const pkPoint = decodePublicKey(input);
+  return poseidon2(pkPoint);
+}
+
+/**
  * Calculates the appropriate hash for a POD entry name.
  */
 export function podNameHash(podName: string): bigint {
@@ -57,6 +68,8 @@ export function podValueHash(podValue: PODValue): bigint {
     case "cryptographic":
       // TODO(POD-P2): Finalize choice of hash for POD cryptographics.
       return podIntHash(podValue.value);
+    case "eddsa-pk":
+      return podEdDSAPublicKeyHash(podValue.value);
     default:
       throw new TypeError(`Unexpected type in PODValue ${podValue}.`);
   }

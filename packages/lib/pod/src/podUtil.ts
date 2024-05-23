@@ -6,7 +6,8 @@ import {
   POD_CRYPTOGRAPHIC_MIN,
   POD_INT_MAX,
   POD_INT_MIN,
-  POD_NAME_REGEX
+  POD_NAME_REGEX,
+  POD_VIRTUAL_NAME_PREFIX
 } from "./podTypes";
 
 // TODO(POD-P3): Decide if these utils should all be published outside
@@ -91,8 +92,8 @@ export function checkSignatureFormat(signature: string): string {
 }
 
 /**
- * Checks that the input matches the proper format for an entry name, as given
- * by {@link POD_NAME_REGEX}.
+ * Checks that the input matches the proper format for a proper POD name, as
+ * given by {@link POD_NAME_REGEX}.
  *
  * @param name the string to check
  * @returns the unmodified input, for easy chaining
@@ -110,6 +111,26 @@ export function checkPODName(name?: string): string {
       Only alphanumeric characters and underscores are allowed.`);
   }
   return name;
+}
+
+/**
+ * Checks that the input matches the proper format for an entry name, i.e.
+ * either a proper or virtual entry name.
+ *
+ * @param name the string to check
+ * @returns the unmodified input, for easy chaining
+ * @throws TypeError if the format doesn't match
+ */
+export function checkPODEntryName(name?: string): string {
+  if (!name) {
+    throw new TypeError("POD entry names cannot be undefined.");
+  }
+  const POD_VIRTUAL_NAME_PREFIX_LENGTH = POD_VIRTUAL_NAME_PREFIX.length;
+  return name.slice(0, POD_VIRTUAL_NAME_PREFIX_LENGTH) ===
+    POD_VIRTUAL_NAME_PREFIX
+    ? POD_VIRTUAL_NAME_PREFIX +
+        checkPODName(name.slice(POD_VIRTUAL_NAME_PREFIX_LENGTH))
+    : checkPODName(name);
 }
 
 /**
@@ -225,6 +246,14 @@ export function checkPODValue(
         POD_INT_MIN,
         POD_INT_MAX
       );
+      break;
+    case "eddsa-pk":
+      requireValueType(nameForErrorMessages, podValue.value, "string");
+      if (podValue.value.match(RegExp(/[0-9a-f]+/i)) === undefined) {
+        throw new TypeError(
+          `POD value ${nameForErrorMessages} of type eddsa-pk has invalid value.`
+        );
+      }
       break;
     default:
       throw new TypeError(
@@ -353,9 +382,10 @@ export function podEntriesToSimplifiedJSON(
   entries: PODEntries,
   space?: number
 ): string {
-  const simplified: Record<string, bigint | string> = {};
+  const simplified: Record<string, bigint | string | [string]> = {};
   for (const [name, value] of Object.entries(entries)) {
-    simplified[name] = value.value;
+    // TODO: Alternatives?
+    simplified[name] = value.type === "eddsa-pk" ? [value.value] : value.value;
   }
   return JSONBig({
     useNativeBigInt: true,
@@ -380,7 +410,7 @@ export function podEntriesFromSimplifiedJSON(
   const simplifiedEntries = JSONBig({
     useNativeBigInt: true,
     alwaysParseAsBig: true
-  }).parse(simplifiedJSON) as Record<string, string | bigint>;
+  }).parse(simplifiedJSON) as Record<string, string | bigint | [string]>;
   const entries: Record<string, PODValue> = {};
   for (const [entryName, rawValue] of Object.entries(simplifiedEntries)) {
     let entryValue: PODValue;
@@ -394,6 +424,10 @@ export function podEntriesFromSimplifiedJSON(
         break;
       case "string":
         entryValue = { type: "string", value: rawValue };
+        break;
+      // TODO: Alternatives?
+      case "object":
+        entryValue = { type: "eddsa-pk", value: rawValue[0] };
         break;
     }
     entries[entryName] = entryValue;

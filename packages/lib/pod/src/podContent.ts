@@ -1,9 +1,15 @@
 import { LeanIMT, LeanIMTMerkleProof } from "@zk-kit/imt";
 import assert from "assert";
 import { podMerkleTreeHash, podNameHash, podValueHash } from "./podCrypto";
-import { PODEntries, PODName, PODValue } from "./podTypes";
 import {
-  checkPODName,
+  PODEdDSAPublicKeyValue,
+  PODEntries,
+  PODName,
+  PODValue,
+  POD_VIRTUAL_NAME_PREFIX
+} from "./podTypes";
+import {
+  checkPODEntryName,
   checkPODValue,
   cloneOptionalPODValue,
   clonePODValue,
@@ -69,12 +75,34 @@ export class PODContent {
    * to be in sorted order, but will be sorted in the resulting `PODContent`.
    *
    * @param entries the POD entries to include
+   * @param publicKey the signer's public key. If this is not included, its presence will be checked in `entries`.
    * @returns a new PODContent
-   * @throws if any of the entries aren't legal for inclusion in a POD
+   * @throws if any of the entries aren't legal for inclusion in a POD or if the
+   * signer's public key has not been specified
    */
-  public static fromEntries(entries: PODEntries): PODContent {
+  public static fromEntries(
+    entries: PODEntries,
+    publicKey?: string
+  ): PODContent {
+    // Check for public key's presence in entries.
+    const signerPublicKeyEntryName =
+      POD_VIRTUAL_NAME_PREFIX + "signerPublicKey";
+
+    if (publicKey === undefined) {
+      if (entries[signerPublicKeyEntryName] === undefined) {
+        throw new Error(
+          "The signer's public key must be specified in the POD entries."
+        );
+      }
+    } else {
+      entries[signerPublicKeyEntryName] = {
+        type: "eddsa-pk",
+        value: publicKey
+      } as PODEdDSAPublicKeyValue;
+    }
+
     const sortedNames = Object.keys(entries)
-      .map((name) => checkPODName(name))
+      .map((name) => checkPODEntryName(name))
       .sort();
     const podMap: PODMap = new Map();
     for (let i = 0; i < sortedNames.length; i++) {
