@@ -1,4 +1,5 @@
 import type { GPCPCDArgs } from "@pcd/gpc-pcd";
+import type { CredentialRequest } from "@pcd/passport-interface";
 import type { SerializedPCD } from "@pcd/pcd-types";
 
 export type ZupassFolderContent =
@@ -29,6 +30,7 @@ export interface ZupassFeeds {
 }
 
 export interface ZupassIdentity {
+  getCredential: (req: CredentialRequest) => Promise<SerializedPCD>;
   getIdentityCommitment: () => Promise<bigint>;
   getAttestedEmails: () => Promise<SerializedPCD[]>;
 }

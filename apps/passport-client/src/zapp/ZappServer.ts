@@ -1,6 +1,11 @@
 import { EmailPCDTypeName } from "@pcd/email-pcd";
 import { GPCPCDArgs, GPCPCDPackage, GPCPCDTypeName } from "@pcd/gpc-pcd";
-import { PCDGetRequest, PCDRequestType } from "@pcd/passport-interface";
+import {
+  CredentialManager,
+  CredentialRequest,
+  PCDGetRequest,
+  PCDRequestType
+} from "@pcd/passport-interface";
 import { SerializedPCD } from "@pcd/pcd-types";
 import { PODPCD } from "@pcd/pod-pcd";
 import {
@@ -196,6 +201,17 @@ export class Identity extends BaseZappServer implements ZupassIdentity {
     clientChannel: ClientChannel
   ) {
     super(context, zapp, clientChannel);
+  }
+
+  public async getCredential(req: CredentialRequest): Promise<SerializedPCD> {
+    const { credentialCache, identity, pcds, ..._rest } =
+      this.getContext().getState();
+    const credentialManager = new CredentialManager(
+      identity,
+      pcds,
+      credentialCache
+    );
+    return credentialManager.requestCredential(req);
   }
 
   public async getIdentityCommitment(): Promise<bigint> {

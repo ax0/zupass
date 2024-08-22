@@ -1,3 +1,4 @@
+import { EmailPCDTypeName } from "@pcd/email-pcd";
 import type { GPCPCDArgs, PODPCDRecordArg } from "@pcd/gpc-pcd";
 import { ArgumentTypeName } from "@pcd/pcd-types";
 import { z } from "zod";
@@ -6,6 +7,12 @@ import { ZupassAPI } from "./api";
 export const SerializedPCDSchema = z.object({
   type: z.string(),
   pcd: z.string()
+});
+
+const CredentialRequestSchema = z.object({
+  // TODO: Replace with `SemaphoreSignaturePCDTypeName`.
+  signatureType: z.literal("sempahore-signature-pcd"),
+  pcdType: z.literal(EmailPCDTypeName).optional()
 });
 
 const StringArgumentSchema = z.object({
@@ -78,6 +85,10 @@ export const ZupassAPISchema = z.object({
       .returns(z.promise(z.void()))
   }),
   identity: z.object({
+    getCredential: z
+      .function()
+      .args(CredentialRequestSchema)
+      .returns(z.promise(SerializedPCDSchema)),
     getIdentityCommitment: z.function().returns(z.promise(z.bigint())),
     getAttestedEmails: z
       .function()
